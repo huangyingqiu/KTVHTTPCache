@@ -83,7 +83,10 @@
     long long length = 0;
     NSArray<KTVHCDataUnit *> *units = [self.unitQueue allUnits];
     for (KTVHCDataUnit *obj in units) {
-        length += obj.cacheLength;
+        NSString *rootPathName = [[[KTVHCPathTool logPath] stringByDeletingLastPathComponent] lastPathComponent];
+        if ([obj.completeURL.absoluteString containsString:rootPathName]) {
+            length += obj.cacheLength;
+        }
     }
     [self unlock];
     return length;
@@ -200,20 +203,23 @@
 - (void)deleteAllUnits
 {
     [self lock];
-    BOOL needArchive = NO;
-    NSArray<KTVHCDataUnit *> *units = [self.unitQueue allUnits];
-    for (KTVHCDataUnit *obj in units) {
-        if (obj.workingCount <= 0) {
-            KTVHCLogDataUnit(@"%p, Delete Unit\nUnit : %@\nFunc : %s", self, obj, __func__);
-            [obj deleteFiles];
-            [self.unitQueue popUnit:obj];
-            needArchive = YES;
-        }
-    }
-    if (needArchive) {
-        [self setNeedsArchive];
-    }
-    [self unlock];
+     BOOL needArchive = NO;
+     NSArray<KTVHCDataUnit *> *units = [self.unitQueue allUnits];
+     for (KTVHCDataUnit *obj in units) {
+         if (obj.workingCount <= 0) {
+             NSString *rootPathName = [[[KTVHCPathTool logPath] stringByDeletingLastPathComponent] lastPathComponent];
+             if ([obj.completeURL.absoluteString containsString:rootPathName]) {
+                 KTVHCLogDataUnit(@"%p, Delete Unit\nUnit : %@\nFunc : %s", self, obj, __func__);
+                 [obj deleteFiles];
+                 [self.unitQueue popUnit:obj];
+                 needArchive = YES;
+             }
+         }
+     }
+     if (needArchive) {
+         [self setNeedsArchive];
+     }
+     [self unlock];
 }
 
 - (void)setNeedsArchive
