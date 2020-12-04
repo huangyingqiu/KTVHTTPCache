@@ -1,4 +1,8 @@
+#if __has_include(<GCDAsyncSocket/GCDAsyncSocket.h>)
+#import <GCDAsyncSocket/GCDAsyncSocket.h>
+#else
 #import "GCDAsyncSocket.h"
+#endif
 #import "HTTPServer.h"
 #import "HTTPConnection.h"
 #import "HTTPMessage.h"
